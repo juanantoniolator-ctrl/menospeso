@@ -304,17 +304,17 @@ body {
 
     <div class="form-group">
       <label class="form-label">Tu peso actual (kg)</label>
-      <input class="form-input" type="number" step="0.1" placeholder="ej: 86" id="ob_peso" inputmode="decimal">
+      <input class="form-input" type="text" inputmode="decimal" placeholder="ej: 86" id="ob_peso">
     </div>
 
     <div class="form-group">
-      <label class="form-label">Tu estatura (m)</label>
-      <input class="form-input" type="number" step="0.01" placeholder="ej: 1.74" id="ob_talla" inputmode="decimal">
+      <label class="form-label">Tu estatura (m) — ej: 1.74 o 1,74</label>
+      <input class="form-input" type="text" inputmode="decimal" placeholder="ej: 1.74" id="ob_talla">
     </div>
 
     <div class="form-group">
       <label class="form-label">Peso objetivo (kg)</label>
-      <input class="form-input" type="number" step="0.1" placeholder="ej: 80" id="ob_meta" inputmode="decimal">
+      <input class="form-input" type="text" inputmode="decimal" placeholder="ej: 80" id="ob_meta">
     </div>
 
     <!-- Preview IMC en tiempo real -->
@@ -351,6 +351,20 @@ body {
     <button class="btn-primary" onclick="guardarPerfil()" id="ob_btn" disabled style="opacity:0.4;cursor:not-allowed;">
       Comenzar plan →
     </button>
+
+    <!-- Solo visible al editar perfil -->
+    <div id="ob_limpiar_wrap" style="display:none; margin-top:20px; border-top:1px solid #1e3a22; padding-top:20px;">
+      <div style="font-size:12px; color:#5a8a5e; margin-bottom:10px; text-align:center;">Zona de reinicio</div>
+      <button onclick="confirmarLimpiar()" style="
+        width:100%; padding:12px; border-radius:10px;
+        border:1px solid #7f1d1d; background:rgba(127,29,29,0.15);
+        color:#f87171; font-size:14px; font-weight:600; cursor:pointer;">
+        🗑️ Limpiar historial y empezar de cero
+      </button>
+      <div style="font-size:11px; color:#3a5a3e; text-align:center; margin-top:8px;">
+        Borra el progreso pero mantiene tu perfil
+      </div>
+    </div>
 
     <div style="font-size:11px; color:#3a5a3e; text-align:center; margin-top:14px;">
       Tus datos se guardan solo en este dispositivo
@@ -1065,10 +1079,12 @@ function showToast(msg){
 }
 
 // ONBOARDING
+function norm(id){ return document.getElementById(id).value.trim().replace(',','.'); }
+
 function calcObPreview(){
-  const p=parseFloat(document.getElementById('ob_peso').value.replace(',','.'));
-  const t=parseFloat(document.getElementById('ob_talla').value.replace(',','.'));
-  const m=parseFloat(document.getElementById('ob_meta').value.replace(',','.'));
+  const p=parseFloat(norm('ob_peso'));
+  const t=parseFloat(norm('ob_talla'));
+  const m=parseFloat(norm('ob_meta'));
   const preview=document.getElementById('ob_preview');
   const btn=document.getElementById('ob_btn');
 
@@ -1107,9 +1123,9 @@ function calcObPreview(){
 }
 
 function guardarPerfil(){
-  const p=parseFloat(document.getElementById('ob_peso').value.replace(',','.'));
-  const t=parseFloat(document.getElementById('ob_talla').value.replace(',','.'));
-  const m=parseFloat(document.getElementById('ob_meta').value.replace(',','.'));
+  const p=parseFloat(norm('ob_peso'));
+  const t=parseFloat(norm('ob_talla'));
+  const m=parseFloat(norm('ob_meta'));
 
   if(isNaN(p)||isNaN(t)||isNaN(m)||p<=m||t<0.5||t>2.5){
     showToast('Revisá los datos ingresados');
@@ -1137,6 +1153,27 @@ function editarPerfil(){
   document.getElementById('appMain').classList.add('hidden');
   document.getElementById('onboarding').classList.remove('hidden');
   document.getElementById('ob_btn').textContent='Guardar cambios →';
+  // Mostrar botón de limpiar historial
+  document.getElementById('ob_limpiar_wrap').style.display='block';
+}
+
+function confirmarLimpiar(){
+  if(confirm('⚠️ Esto borra todo tu progreso — tildados, notas, agua y pesos registrados. Tu perfil se mantiene para que puedas empezar un plan nuevo.\n\n¿Confirmar?')){
+    const perfil = S.perfil;
+    // Reset completo menos el perfil
+    S = {
+      semana:1, dia:0, checks:{}, pesos:{ 1:{ peso:perfil.pesoInicial, cintura:null, cadera:null } },
+      agua:{}, notas:{}, energia:{}, hambre:{}, menuSel:{},
+      perfil: perfil
+    };
+    save();
+    showToast('Historial limpiado ✓');
+    // Volver a la app
+    document.getElementById('onboarding').classList.add('hidden');
+    document.getElementById('ob_limpiar_wrap').style.display='none';
+    document.getElementById('appMain').classList.remove('hidden');
+    initMain();
+  }
 }
 
 // INIT MAIN APP
