@@ -607,7 +607,25 @@ let S = {
 function load() {
   try {
     const d=localStorage.getItem(SK);
-    if(d) S=JSON.parse(d);
+    if(d){
+      S=JSON.parse(d);
+    } else {
+      // Migrar desde versiones anteriores
+      const old = localStorage.getItem('plan60v3') || localStorage.getItem('plan60v2') || localStorage.getItem('plan60dias_v2') || localStorage.getItem('plan60dias_v1');
+      if(old){
+        const prev = JSON.parse(old);
+        // Construir perfil desde datos viejos si no existe
+        if(!prev.perfil && prev.pesos && prev.pesos[1]){
+          prev.perfil = {
+            pesoInicial: prev.pesos[1].peso || 86,
+            pesoMeta: 80,
+            talla: 1.74
+          };
+        }
+        S = { ...S, ...prev };
+        save(); // guardar en la nueva key
+      }
+    }
     // sincronizar constantes con el perfil guardado
     if(S.perfil){
       PESO_INI = S.perfil.pesoInicial;
@@ -717,11 +735,13 @@ function toggleVaso(i){
 function toggleCheck(key){
   S.checks[key]=!S.checks[key];
   save();
+  // Actualizar solo el ítem tocado sin re-renderizar todo
   const el=document.getElementById('ci_'+key);
   if(el){
     el.classList.toggle('done',!!S.checks[key]);
     el.querySelector('.check-box').innerHTML=S.checks[key]?svgCheck():'';
   }
+  // Actualizar header (anillos + stats) inmediatamente
   updateHeader();
 }
 function svgCheck(){
@@ -1196,7 +1216,6 @@ function init(){
   });
 
   if(!S.perfil){
-    // Primera vez — mostrar onboarding
     document.getElementById('onboarding').classList.remove('hidden');
     document.getElementById('appMain').classList.add('hidden');
   } else {
@@ -1205,7 +1224,13 @@ function init(){
     initMain();
   }
 }
-init();
+
+// Esperar que el DOM esté completamente listo
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
