@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Plan 60 Días">
+<meta name="theme-color" content="#0c1a0e">
+<title>Plan 60 Días</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: #0c1a0e; color: #d4e8d4;
+  font-family: -apple-system, 'Inter', system-ui, sans-serif;
+  min-height: 100vh; padding-bottom: 90px;
+  -webkit-font-smoothing: antialiased;
+}
+.hidden { display: none !important; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0f2e14 0%, #163d1c 100%);
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid #1e3a22;
+}
+.header-inner { max-width: 480px; margin: 0 auto; }
+.header-eyebrow { font-size: 11px; color: #5a8a5e; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+.header-title { font-size: 19px; font-weight: 700; color: #e8f5e8; margin-bottom: 10px; }
+
+.semana-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.semana-label { font-size: 12px; color: #5a8a5e; white-space: nowrap; }
+.semana-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.semana-btn {
+  padding: 3px 9px; border-radius: 20px; border: none; cursor: pointer;
+  font-size: 12px; background: rgba(255,255,255,0.06); color: #8fa88f;
+  transition: all 0.15s; font-weight: 400;
+}
+.semana-btn.active { background: #22c55e; color: #0a1a0c; font-weight: 700; }
+
+.stats-row { display: flex; gap: 10px; align-items: center; }
+.stats-text { flex: 1; padding-left: 4px; }
+.stats-text .s-label { font-size: 11px; color: #5a8a5e; }
+.stats-text .s-value { font-size: 17px; font-weight: 700; color: #e8f5e8; }
+.stats-text .s-cat { font-size: 11px; margin-top: 1px; }
+.stats-text .s-sub { font-size: 11px; color: #5a8a5e; margin-top: 2px; }
+.header-btns { display: flex; gap: 6px; flex-direction: column; }
+.hbtn {
+  background: #1e3a22; border: 1px solid #2d5a33; border-radius: 8px;
+  color: #8fa88f; font-size: 11px; padding: 5px 8px; cursor: pointer; white-space: nowrap;
+}
+
+/* AGUA BAR */
+.agua-bar-wrap { margin-top: 10px; }
+.agua-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.agua-label { font-size: 11px; color: #5a8a5e; }
+.agua-count { font-size: 12px; font-weight: 700; color: #38bdf8; }
+.agua-vasos { display: flex; gap: 5px; flex-wrap: wrap; }
+.vaso {
+  width: 30px; height: 30px; border-radius: 6px; cursor: pointer;
+  border: 1.5px solid #1e3a22; background: #111e13;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.15s; user-select: none;
+}
+.vaso.lleno { background: rgba(56,189,248,0.15); border-color: #38bdf8; }
+
+/* POPUP */
+.popup-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+}
+.popup {
+  background: #111e13; border-radius: 20px 20px 0 0;
+  border: 1px solid #1e3a22; padding: 20px 20px 36px;
+  width: 100%; max-width: 480px;
+}
+.popup-title { font-size: 16px; font-weight: 700; color: #e8f5e8; margin-bottom: 16px; }
+.popup-close {
+  float: right; background: none; border: none; color: #5a8a5e;
+  font-size: 20px; cursor: pointer; line-height: 1;
+}
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 12px; color: #5a8a5e; margin-bottom: 5px; display: block; }
+.form-input {
+  width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid #2d5a33;
+  background: #132b17; color: #d4e8d4; font-size: 14px; outline: none;
+}
+.form-input:focus { border-color: #22c55e; }
+.form-textarea {
+  width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid #2d5a33;
+  background: #132b17; color: #d4e8d4; font-size: 14px; outline: none;
+  resize: none; min-height: 80px; font-family: inherit;
+}
+.form-textarea:focus { border-color: #22c55e; }
+.btn-primary {
+  width: 100%; padding: 12px; border-radius: 10px; border: none;
+  background: #22c55e; color: #0a1a0c; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.btn-secondary {
+  width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #2d5a33;
+  background: transparent; color: #8fa88f; font-size: 14px; cursor: pointer; margin-top: 8px;
+}
+
+/* TABS */
+.tabs-wrap { position: sticky; top: 0; z-index: 9; background: #111e13; border-bottom: 1px solid #1e3a22; }
+.tabs { display: flex; max-width: 480px; margin: 0 auto; }
+.tab-btn {
+  flex: 1; padding: 11px 0; border: none; cursor: pointer;
+  background: transparent; color: #4a6650; font-size: 12px; font-weight: 400;
+  border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.tab-btn.active { color: #22c55e; font-weight: 700; border-bottom-color: #22c55e; }
+
+/* CONTENT */
+.content { max-width: 480px; margin: 0 auto; padding: 14px 16px; }
+.section-title { font-size: 15px; font-weight: 700; color: #e8f5e8; margin-bottom: 14px; }
+
+/* DIA SELECTOR */
+.dia-row { display: flex; gap: 5px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.dia-btn {
+  flex-shrink: 0; padding: 5px 10px; border-radius: 20px; border: none; cursor: pointer;
+  font-size: 12px; background: rgba(255,255,255,0.05); color: #8fa88f;
+  transition: all 0.15s; font-weight: 400;
+}
+.dia-btn.active { background: #22c55e; color: #0a1a0c; font-weight: 700; }
+.dia-title { font-size: 15px; font-weight: 700; color: #e8f5e8; margin-bottom: 4px; }
+.dia-nota-preview {
+  font-size: 12px; color: #5a8a5e; margin-bottom: 14px; font-style: italic;
+  cursor: pointer; padding: 6px 8px; border-radius: 6px; background: rgba(255,255,255,0.02);
+  border-left: 2px solid #1e3a22;
+}
+.dia-nota-preview:hover { border-left-color: #5a8a5e; }
+
+/* MENU OPCIONES */
+.menu-toggle {
+  font-size: 11px; color: #5a8a5e; cursor: pointer; margin-left: 8px;
+  background: rgba(255,255,255,0.04); border: 1px solid #1e3a22;
+  border-radius: 12px; padding: 2px 8px;
+}
+.meal-section { margin-bottom: 12px; }
+.meal-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.meal-name { font-size: 13px; font-weight: 600; color: #a3c8a5; }
+.meal-hora { font-size: 11px; color: #5a8a5e; }
+.meal-opciones { display: none; margin-top: 4px; margin-bottom: 6px; }
+.meal-opciones.open { display: block; }
+.opcion-btn {
+  display: block; width: 100%; text-align: left;
+  padding: 7px 10px; border-radius: 7px; border: 1px solid #1e3a22;
+  background: rgba(255,255,255,0.02); color: #8fa88f; font-size: 12px;
+  cursor: pointer; margin-bottom: 4px; transition: all 0.15s;
+}
+.opcion-btn:hover, .opcion-btn.sel { background: rgba(34,197,94,0.08); border-color: #2d5a33; color: #a3c8a5; }
+
+.ej-divider { border-top: 1px solid #1e3a22; padding-top: 12px; margin-top: 4px; }
+.ej-header { font-size: 13px; font-weight: 600; color: #60a5fa; margin-bottom: 8px; }
+
+/* CHECK ITEM */
+.check-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: 8px; cursor: pointer;
+  background: rgba(255,255,255,0.03); border-left: 3px solid transparent;
+  margin-bottom: 4px; transition: all 0.18s; user-select: none; -webkit-user-select: none;
+}
+.check-item.done { background: rgba(34,197,94,0.10); border-left-color: #22c55e; }
+.check-box {
+  width: 20px; height: 20px; border-radius: 5px; border: 2px solid #4a6650;
+  background: transparent; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.18s;
+}
+.check-item.done .check-box { background: #22c55e; border-color: #22c55e; }
+.check-text { font-size: 13px; color: #d4e8d4; line-height: 1.3; transition: all 0.18s; }
+.check-item.done .check-text { color: #8fa88f; text-decoration: line-through; }
+
+/* RING */
+.ring-wrap { position: relative; flex-shrink: 0; }
+.ring-label {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-pct { font-size: 12px; font-weight: 700; color: #f0f4f0; line-height: 1; }
+.ring-sub { font-size: 9px; color: #8fa88f; margin-top: 1px; }
+
+/* SEMANA TAB */
+.semana-day-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: 10px; cursor: pointer;
+  background: rgba(255,255,255,0.03); border: 1px solid #1e3a22;
+  margin-bottom: 7px; transition: background 0.15s;
+}
+.semana-day-card:active { background: rgba(34,197,94,0.06); }
+.sdc-left { flex: 1; }
+.sdc-name { font-size: 14px; font-weight: 600; color: #d4e8d4; }
+.sdc-sub { font-size: 11px; color: #5a8a5e; margin-top: 2px; }
+.sdc-nota { font-size: 11px; color: #4a6a8a; margin-top: 3px; font-style: italic; }
+
+.total-card {
+  margin-top: 12px; padding: 14px 16px; border-radius: 12px;
+  background: linear-gradient(135deg, #0f2e14, #163d1c); border: 1px solid #2d5a33;
+}
+.total-pct { font-size: 26px; font-weight: 800; color: #22c55e; }
+.total-sub { font-size: 12px; color: #8fa88f; margin-top: 2px; }
+
+/* RESUMEN SEMANAL */
+.resumen-card {
+  margin-top: 12px; padding: 14px 16px; border-radius: 12px;
+  background: rgba(255,255,255,0.02); border: 1px solid #1e3a22;
+}
+.resumen-title { font-size: 13px; font-weight: 600; color: #a3c8a5; margin-bottom: 10px; }
+.resumen-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.resumen-col { flex: 1; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; text-align: center; }
+.resumen-col-val { font-size: 18px; font-weight: 700; }
+.resumen-col-label { font-size: 10px; color: #5a8a5e; margin-top: 2px; }
+.resumen-texto { font-size: 12px; color: #8fa88f; line-height: 1.6; }
+
+/* PROGRESO TAB */
+.prog-section { margin-bottom: 20px; }
+.peso-card {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 7px; padding: 10px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.02); border: 1px solid #1a2e1c;
+}
+.peso-card.current { background: rgba(34,197,94,0.08); border-color: #2d5a33; }
+.peso-badge {
+  width: 30px; height: 30px; border-radius: 8px; background: #1e3a22;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #5a8a5e; flex-shrink: 0;
+}
+.peso-badge.current { color: #22c55e; }
+.peso-card-inner { flex: 1; }
+.peso-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.peso-val { font-size: 15px; font-weight: 600; color: #d4e8d4; }
+.peso-medidas { font-size: 11px; color: #5a8a5e; }
+.peso-cat { font-size: 11px; }
+.bar-bg { height: 4px; border-radius: 2px; background: #1e3a22; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.bar-sub { font-size: 10px; color: #5a8a5e; margin-top: 2px; }
+.peso-empty { font-size: 12px; color: #3a5a3e; font-style: italic; }
+
+.meta-card {
+  padding: 14px 16px; border-radius: 12px;
+  background: linear-gradient(135deg, #0f2e14, #163d1c); border: 1px solid #2d5a33;
+}
+.meta-cols { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.mc { }
+.mc.center { text-align: center; }
+.mc.right { text-align: right; }
+.mc-label { font-size: 11px; color: #5a8a5e; }
+.mc-val { font-size: 17px; font-weight: 700; }
+.meta-bar-bg { height: 8px; border-radius: 4px; background: #1e3a22; overflow: hidden; margin-bottom: 8px; }
+.meta-bar-fill { height: 100%; background: linear-gradient(90deg, #60a5fa, #22c55e); border-radius: 4px; transition: width 0.6s; }
+.meta-sub { font-size: 12px; color: #8fa88f; }
+
+.adh-card { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid #1e3a22; }
+.adh-label { font-size: 12px; color: #5a8a5e; margin-bottom: 8px; }
+.adh-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.adh-s { font-size: 11px; color: #5a8a5e; width: 20px; }
+.adh-bar-bg { flex: 1; height: 6px; border-radius: 3px; background: #1a2e1c; overflow: hidden; }
+.adh-bar-fill { height: 100%; border-radius: 3px; }
+.adh-pct { font-size: 11px; color: #8fa88f; width: 30px; text-align: right; }
+
+/* FOOTER */
+.footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #0c1a0e; border-top: 1px solid #1a2e1c;
+  padding: 8px 16px; text-align: center; font-size: 11px; color: #3a5a3e;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+  background: #22c55e; color: #0a1a0c; padding: 8px 18px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; z-index: 200;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Plan 60 Días</div>
+    <div class="header-title">De 86 kg a 80 kg</div>
+    <div class="semana-row">
+      <span class="semana-label">Semana</span>
+      <div class="semana-btns" id="semanaBtns"></div>
+    </div>
+    <div class="stats-row">
+      <div class="ring-wrap" id="ringHoyWrap">
+        <svg width="54" height="54" style="transform:rotate(-90deg)">
+          <circle cx="27" cy="27" r="20" fill="none" stroke="#132b17" stroke-width="5"/>
+          <circle id="ringHoyC" cx="27" cy="27" r="20" fill="none" stroke="#22c55e" stroke-width="5"
+            stroke-dasharray="125.7" stroke-dashoffset="125.7" stroke-linecap="round" style="transition:stroke-dashoffset 0.5s"/>
+        </svg>
+        <div class="ring-label"><span class="ring-pct" id="rhPct">0%</span><span class="ring-sub">hoy</span></div>
+      </div>
+      <div class="ring-wrap">
+        <svg width="54" height="54" style="transform:rotate(-90deg)">
+          <circle cx="27" cy="27" r="20" fill="none" stroke="#131f2e" stroke-width="5"/>
+          <circle id="ringSemC" cx="27" cy="27" r="20" fill="none" stroke="#60a5fa" stroke-width="5"
+            stroke-dasharray="125.7" stroke-dashoffset="125.7" stroke-linecap="round" style="transition:stroke-dashoffset 0.5s"/>
+        </svg>
+        <div class="ring-label"><span class="ring-pct" id="rsPct">0%</span><span class="ring-sub">sem</span></div>
+      </div>
+      <div class="stats-text">
+        <div class="s-label">Peso · IMC</div>
+        <div class="s-value" id="sVal">86 kg · 28.4</div>
+        <div class="s-cat" id="sCat">Sobrepeso</div>
+        <div class="s-sub" id="sSub">Faltan 6.0 kg</div>
+      </div>
+      <div class="header-btns">
+        <button class="hbtn" onclick="openPopup('peso')">⚖️ Peso</button>
+        <button class="hbtn" onclick="openPopup('nota')">📝 Nota</button>
+      </div>
+    </div>
+
+    <!-- AGUA -->
+    <div class="agua-bar-wrap">
+      <div class="agua-label-row">
+        <span class="agua-label">💧 Hidratación diaria (meta: 8 vasos de 250 ml)</span>
+        <span class="agua-count" id="aguaCount">0/8</span>
+      </div>
+      <div class="agua-vasos" id="aguaVasos"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('hoy',this)">📋 Día</button>
+    <button class="tab-btn" onclick="setTab('semana',this)">📅 Semana</button>
+    <button class="tab-btn" onclick="setTab('progreso',this)">📈 Progreso</button>
+  </div>
+</div>
+
+<div style="max-width:480px;margin:0 auto">
+
+<!-- TAB HOY -->
+<div id="tab-hoy" class="content">
+  <div class="dia-row" id="diaBtns"></div>
+  <div class="dia-title" id="diaTitulo"></div>
+  <div class="dia-nota-preview" id="notaPreview" onclick="openPopup('nota')">📝 Agregar nota del día...</div>
+  <div id="comidasContainer"></div>
+  <div class="ej-divider">
+    <div class="ej-header">🏃 Ejercicio</div>
+    <div id="ejercicioContainer"></div>
+  </div>
+</div>
+
+<!-- TAB SEMANA -->
+<div id="tab-semana" class="content hidden">
+  <div class="section-title" id="semTitulo">Semana 1</div>
+  <div id="semDiasContainer"></div>
+  <div class="total-card">
+    <div style="font-size:12px;color:#5a8a5e;margin-bottom:4px" id="semTotalLabel">Total semana</div>
+    <div class="total-pct" id="semTotalPct">0%</div>
+    <div class="total-sub" id="semTotalSub"></div>
+  </div>
+  <div class="resumen-card" id="resumenCard"></div>
+</div>
+
+<!-- TAB PROGRESO -->
+<div id="tab-progreso" class="content hidden">
+  <div class="prog-section">
+    <div class="section-title">Evolución del peso y medidas</div>
+    <div id="pesosContainer"></div>
+  </div>
+  <div class="meta-card">
+    <div style="font-size:11px;color:#5a8a5e;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Objetivo</div>
+    <div class="meta-cols">
+      <div class="mc"><div class="mc-label">Inicio</div><div class="mc-val" style="color:#f59e0b">86 kg</div></div>
+      <div class="mc center"><div class="mc-label">Actual</div><div class="mc-val" style="color:#60a5fa" id="metaActual">86 kg</div></div>
+      <div class="mc right"><div class="mc-label">Meta</div><div class="mc-val" style="color:#22c55e">80 kg</div></div>
+    </div>
+    <div class="meta-bar-bg"><div class="meta-bar-fill" id="metaBarFill" style="width:0%"></div></div>
+    <div class="meta-sub" id="metaSub"></div>
+  </div>
+  <div class="adh-card">
+    <div class="adh-label">Adherencia al plan por semana</div>
+    <div id="adhContainer"></div>
+  </div>
+</div>
+
+</div><!-- max-width -->
+
+<!-- POPUPS -->
+<div class="popup-overlay hidden" id="overlayPeso" onclick="closePopupIf(event,'overlayPeso')">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopup('peso')">✕</button>
+    <div class="popup-title">⚖️ Registrar medidas — Semana <span id="popPesoSem"></span></div>
+    <div class="form-group">
+      <label class="form-label">Peso (kg)</label>
+      <input class="form-input" type="number" step="0.1" placeholder="ej: 85.2" id="inPeso">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cintura (cm) — opcional</label>
+      <input class="form-input" type="number" step="0.5" placeholder="ej: 94" id="inCintura">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cadera (cm) — opcional</label>
+      <input class="form-input" type="number" step="0.5" placeholder="ej: 102" id="inCadera">
+    </div>
+    <button class="btn-primary" onclick="guardarPeso()">Guardar medidas</button>
+    <button class="btn-secondary" onclick="closePopup('peso')">Cancelar</button>
+  </div>
+</div>
+
+<div class="popup-overlay hidden" id="overlayNota" onclick="closePopupIf(event,'overlayNota')">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopup('nota')">✕</button>
+    <div class="popup-title">📝 Nota del día</div>
+    <div style="font-size:12px;color:#5a8a5e;margin-bottom:10px" id="popNotaDia"></div>
+    <div class="form-group">
+      <label class="form-label">¿Cómo te sentiste hoy?</label>
+      <textarea class="form-textarea" id="inNota" placeholder="Hambre, energía, cómo fue el entreno, algo que quieras recordar..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nivel de energía</label>
+      <div style="display:flex;gap:8px;margin-top:4px" id="energiaSelector">
+        <button onclick="setEnergia(1)" class="opcion-btn" data-e="1">😴 Baja</button>
+        <button onclick="setEnergia(2)" class="opcion-btn" data-e="2">😐 Media</button>
+        <button onclick="setEnergia(3)" class="opcion-btn" data-e="3">⚡ Alta</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hambre general del día</label>
+      <div style="display:flex;gap:8px;margin-top:4px" id="hambreSelector">
+        <button onclick="setHambre(1)" class="opcion-btn" data-h="1">😊 Ok</button>
+        <button onclick="setHambre(2)" class="opcion-btn" data-h="2">😕 Bastante</button>
+        <button onclick="setHambre(3)" class="opcion-btn" data-h="3">😤 Mucha</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="guardarNota()">Guardar nota</button>
+    <button class="btn-secondary" onclick="closePopup('nota')">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="footer">Meta: 0,75 kg/semana · 8 vasos de agua/día · Datos guardados en el dispositivo</div>
+
+<script>
+const SK = 'plan60v3';
+const PESO_INI = 86, PESO_META = 80, TALLA = 1.74;
+const SEMANAS = [1,2,3,4,5,6,7,8,9];
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+// MENU ROTATIVO - 3 opciones para almuerzo y cena
+const OPCIONES_ALMUERZO = [
+  ['200 g de pollo a la plancha','Ensalada libre','½ taza arroz integral o batata'],
+  ['Atún al natural (170 g)','Ensalada con maíz y tomate','1 rebanada de pan integral'],
+  ['2 huevos duros + 1 clara extra','Ensalada verde abundante','½ taza de lentejas cocidas'],
+];
+const OPCIONES_CENA = [
+  ['200 g de pescado a la plancha','Verduras al vapor','Sopa de verduras (si tenés hambre)'],
+  ['200 g de pollo al horno','Brócoli y zanahoria salteados','1 caldo de verduras'],
+  ['200 g de carne magra (nalga/lomo)','Ensalada abundante','Puré de calabaza (pequeño)'],
+];
+
+const COMIDAS_LV = [
+  { id:'desayuno', hora:'07:00', nombre:'Desayuno', fija:true, items:['Mate o café sin azúcar','2 huevos revueltos','2 tostadas integrales','1 fruta (manzana o naranja)'] },
+  { id:'colacion', hora:'10:00', nombre:'Colación', fija:true, items:['1 yogur descremado sin azúcar'] },
+  { id:'almuerzo', hora:'13:00', nombre:'Almuerzo', fija:false, opciones: OPCIONES_ALMUERZO },
+  { id:'merienda', hora:'17:00', nombre:'Merienda', fija:true, items:['Mate','30 g de nueces o almendras'] },
+  { id:'cena', hora:'20:30', nombre:'Cena', fija:false, opciones: OPCIONES_CENA },
+];
+const COMIDAS_SAB = [
+  { id:'asado', hora:'', nombre:'Asado (con criterio)', fija:true, items:['Vacío, cuadril, lomo o pollo','Mucha ensalada','Evitar repetir pan, chorizo y achuras','1 porción moderada de postre (opcional)'] },
+  { id:'cena_sab', hora:'20:30', nombre:'Cena', fija:false, opciones: OPCIONES_CENA },
+];
+const COMIDAS_DOM = [
+  { id:'gustito', hora:'', nombre:'Un gustito (al mediodía)', fija:true, items:['Pasta o pizza en una comida (moderación)','Porción controlada — sin repetir'] },
+  { id:'cena_dom', hora:'20:30', nombre:'Cena', fija:false, opciones: OPCIONES_CENA },
+];
+
+const EJERCICIOS = [
+  { id:'gym1', label:'Gimnasio - Día 1' },
+  { id:'gym2', label:'Gimnasio - Día 2' },
+  { id:'gym3', label:'Gimnasio - Día 3' },
+  { id:'gym4', label:'Gimnasio - Día 4' },
+  { id:'cam1', label:'Caminata rápida 30-45 min' },
+  { id:'cam2', label:'Caminata rápida 30-45 min' },
+  { id:'pasos', label:'8.000-10.000 pasos diarios' },
+];
+
+function getComidas(di) {
+  if (di===5) return COMIDAS_SAB;
+  if (di===6) return COMIDAS_DOM;
+  return COMIDAS_LV;
+}
+
+// STATE
+let S = {
+  semana:1, dia:0, checks:{}, pesos:{1:{peso:86,cintura:null,cadera:null}},
+  agua:{}, notas:{}, energia:{}, hambre:{}, menuSel:{}
+};
+
+function load() {
+  try { const d=localStorage.getItem(SK); if(d) S=JSON.parse(d); } catch(e){}
+}
+function save() {
+  try { localStorage.setItem(SK, JSON.stringify(S)); } catch(e){}
+}
+
+// KEYS
+function ck(s,d,c,i){ return `s${s}d${d}${c}i${i}`; }
+function ek(s,d,e){ return `ej${s}d${d}${e}`; }
+function aguaKey(s,d){ return `ag${s}d${d}`; }
+function notaKey(s,d){ return `n${s}d${d}`; }
+function menuKey(s,d,c){ return `m${s}d${d}${c}`; }
+
+// IMC
+function imc(p){ return (p/(TALLA*TALLA)).toFixed(1); }
+function imcCat(v){
+  if(v<18.5) return {l:'Bajo peso',c:'#60a5fa'};
+  if(v<25)   return {l:'Peso normal',c:'#22c55e'};
+  if(v<30)   return {l:'Sobrepeso',c:'#f59e0b'};
+  if(v<35)   return {l:'Obesidad I',c:'#f97316'};
+  if(v<40)   return {l:'Obesidad II',c:'#ef4444'};
+  return {l:'Obesidad III',c:'#991b1b'};
+}
+
+// PROGRESS
+function progrHoy(){
+  const cm=getComidas(S.dia);
+  const all=[
+    ...cm.flatMap(c=>{
+      if(c.fija) return c.items.map(it=>ck(S.semana,S.dia,c.id,it));
+      const sel=S.menuSel[menuKey(S.semana,S.dia,c.id)]??0;
+      return c.opciones[sel].map(it=>ck(S.semana,S.dia,c.id,it));
+    }),
+    ...EJERCICIOS.map(e=>ek(S.semana,S.dia,e.id))
+  ];
+  const m=all.filter(k=>S.checks[k]).length;
+  return {m,t:all.length,pct:all.length?Math.round(m/all.length*100):0};
+}
+function progrSem(s){
+  let t=0,m=0;
+  for(let d=0;d<7;d++){
+    const p=progrDia(s,d);
+    t+=p.t; m+=p.m;
+  }
+  return {m,t,pct:t?Math.round(m/t*100):0};
+}
+function progrDia(s,d){
+  const cm=getComidas(d);
+  const all=[
+    ...cm.flatMap(c=>{
+      if(c.fija) return c.items.map(it=>ck(s,d,c.id,it));
+      const sel=S.menuSel[menuKey(s,d,c.id)]??0;
+      return c.opciones[sel].map(it=>ck(s,d,c.id,it));
+    }),
+    ...EJERCICIOS.map(e=>ek(s,d,e.id))
+  ];
+  const m=all.filter(k=>S.checks[k]).length;
+  return {m,t:all.length,pct:all.length?Math.round(m/all.length*100):0};
+}
+
+// UPDATE HEADER
+function updateHeader(){
+  const ph=progrHoy(), ps=progrSem(S.semana), circ=125.7;
+  document.getElementById('ringHoyC').style.strokeDashoffset=circ-(ph.pct/100)*circ;
+  document.getElementById('rhPct').textContent=ph.pct+'%';
+  document.getElementById('ringSemC').style.strokeDashoffset=circ-(ps.pct/100)*circ;
+  document.getElementById('rsPct').textContent=ps.pct+'%';
+
+  const pd=S.pesos[S.semana]??S.pesos[1]??{peso:PESO_INI};
+  const peso=pd.peso??PESO_INI;
+  const iv=parseFloat(imc(peso));
+  const cat=imcCat(iv);
+  const perdido=Math.max(0,PESO_INI-peso).toFixed(1);
+  const falta=Math.max(0,peso-PESO_META).toFixed(1);
+  document.getElementById('sVal').textContent=`${peso} kg · ${imc(peso)}`;
+  document.getElementById('sCat').textContent=cat.l;
+  document.getElementById('sCat').style.color=cat.c;
+  document.getElementById('sSub').textContent=(parseFloat(perdido)>0?`▼ ${perdido} kg · `:'')+'Faltan '+falta+' kg';
+
+  // agua
+  const ak=aguaKey(S.semana,S.dia);
+  const vasos=S.agua[ak]??0;
+  document.getElementById('aguaCount').textContent=vasos+'/8';
+  let html='';
+  for(let i=0;i<8;i++){
+    html+=`<div class="vaso${i<vasos?' lleno':''}" onclick="toggleVaso(${i})">💧</div>`;
+  }
+  document.getElementById('aguaVasos').innerHTML=html;
+}
+
+function toggleVaso(i){
+  const ak=aguaKey(S.semana,S.dia);
+  const cur=S.agua[ak]??0;
+  S.agua[ak]= cur===i+1 ? i : i+1;
+  save(); updateHeader();
+}
+
+// TOGGLE CHECK
+function toggleCheck(key){
+  S.checks[key]=!S.checks[key];
+  save();
+  const el=document.getElementById('ci_'+key);
+  if(el){
+    el.classList.toggle('done',!!S.checks[key]);
+    el.querySelector('.check-box').innerHTML=S.checks[key]?svgCheck():'';
+  }
+  updateHeader();
+}
+function svgCheck(){
+  return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#0a1a0c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function renderCI(key,label){
+  const done=!!S.checks[key];
+  return `<div class="check-item${done?' done':''}" id="ci_${key}" onclick="toggleCheck('${key}')">
+    <div class="check-box">${done?svgCheck():''}</div>
+    <span class="check-text">${label}</span>
+  </div>`;
+}
+
+// MENU TOGGLE
+function toggleMenu(cid){
+  const el=document.getElementById('opciones_'+cid);
+  if(el) el.classList.toggle('open');
+}
+function selOpcion(s,d,cid,idx){
+  S.menuSel[menuKey(s,d,cid)]=idx;
+  save();
+  renderTab();
+}
+
+// RENDER HOY
+function renderHoy(){
+  document.getElementById('diaBtns').innerHTML=DIAS.map((d,i)=>
+    `<button class="dia-btn${i===S.dia?' active':''}" onclick="setDia(${i})">${d.slice(0,3)}</button>`
+  ).join('');
+  document.getElementById('diaTitulo').textContent=`${DIAS[S.dia]} — Semana ${S.semana}`;
+
+  const nk=notaKey(S.semana,S.dia);
+  const nota=S.notas[nk];
+  const en=S.energia[nk], hm=S.hambre[nk];
+  let notaTxt='📝 Agregar nota del día...';
+  if(nota||en||hm){
+    let parts=[];
+    if(en) parts.push(['😴 Baja','😐 Media','⚡ Alta'][en-1]+' energía');
+    if(hm) parts.push(['😊 Hambre ok','😕 Bastante hambre','😤 Mucha hambre'][hm-1]);
+    if(nota) parts.push(nota.length>40?nota.slice(0,40)+'...':nota);
+    notaTxt='📝 '+parts.join(' · ');
+  }
+  document.getElementById('notaPreview').textContent=notaTxt;
+
+  const comidas=getComidas(S.dia);
+  document.getElementById('comidasContainer').innerHTML=comidas.map(c=>{
+    if(c.fija){
+      return `<div class="meal-section">
+        <div class="meal-header">
+          <span class="meal-name">${c.nombre}</span>
+          ${c.hora?`<span class="meal-hora">${c.hora}</span>`:''}
+        </div>
+        ${c.items.map(it=>renderCI(ck(S.semana,S.dia,c.id,it),it)).join('')}
+      </div>`;
+    } else {
+      const sel=S.menuSel[menuKey(S.semana,S.dia,c.id)]??0;
+      const items=c.opciones[sel];
+      return `<div class="meal-section">
+        <div class="meal-header">
+          <span class="meal-name">${c.nombre}</span>
+          ${c.hora?`<span class="meal-hora">${c.hora}</span>`:''}
+          <span class="menu-toggle" onclick="toggleMenu('${c.id}')">cambiar menú ▾</span>
+        </div>
+        <div class="meal-opciones" id="opciones_${c.id}">
+          ${c.opciones.map((op,i)=>`<button class="opcion-btn${i===sel?' sel':''}" onclick="selOpcion(${S.semana},${S.dia},'${c.id}',${i})">
+            Opción ${i+1}: ${op[0]}
+          </button>`).join('')}
+        </div>
+        ${items.map(it=>renderCI(ck(S.semana,S.dia,c.id,it),it)).join('')}
+      </div>`;
+    }
+  }).join('');
+
+  document.getElementById('ejercicioContainer').innerHTML=
+    EJERCICIOS.map(e=>renderCI(ek(S.semana,S.dia,e.id),e.label)).join('');
+
+  updateHeader();
+}
+
+// SMALL RING
+function sRing(pct,col){
+  const circ=113.1, off=circ-(pct/100)*circ;
+  const bg=col==='#22c55e'?'#132b17':col==='#60a5fa'?'#131f2e':'#2e1f0a';
+  return `<div class="ring-wrap" style="width:42px;height:42px">
+    <svg width="42" height="42" style="transform:rotate(-90deg)">
+      <circle cx="21" cy="21" r="18" fill="none" stroke="${bg}" stroke-width="4"/>
+      <circle cx="21" cy="21" r="18" fill="none" stroke="${col}" stroke-width="4"
+        stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+    </svg>
+    <div class="ring-label"><span style="font-size:10px;font-weight:700;color:#f0f4f0">${pct}%</span></div>
+  </div>`;
+}
+
+// RESUMEN SEMANAL
+function generarResumen(s){
+  const ps=progrSem(s);
+  const pAlim=calcProgAlim(s), pEj=calcProgEj(s);
+  const agua=calcAguaSem(s);
+  const notas=contarNotas(s);
+
+  let texto='';
+  if(ps.pct>=80) texto+=`✅ Excelente semana — cumpliste el ${ps.pct}% del plan. `;
+  else if(ps.pct>=50) texto+=`👍 Buena semana (${ps.pct}%), con margen para mejorar. `;
+  else texto+=`💪 Semana difícil (${ps.pct}%). No te desanimés, lo importante es continuar. `;
+
+  if(pAlim>pEj) texto+=`Tu punto fuerte fue la alimentación (${pAlim}%). `;
+  else if(pEj>pAlim) texto+=`Tu punto fuerte fue el ejercicio (${pEj}%). `;
+
+  if(pAlim<50) texto+=`La alimentación necesita más atención (${pAlim}%). `;
+  if(pEj<50) texto+=`El ejercicio fue el área más débil (${pEj}%). `;
+
+  if(agua>=6) texto+=`💧 Buena hidratación durante la semana. `;
+  else texto+=`💧 Hidratación baja — intentá tomar más agua. `;
+
+  return texto;
+}
+function calcProgAlim(s){
+  let t=0,m=0;
+  for(let d=0;d<7;d++){
+    const cm=getComidas(d);
+    cm.forEach(c=>{
+      const items=c.fija?c.items:(c.opciones[S.menuSel[menuKey(s,d,c.id)]??0]);
+      items.forEach(it=>{ t++; if(S.checks[ck(s,d,c.id,it)]) m++; });
+    });
+  }
+  return t?Math.round(m/t*100):0;
+}
+function calcProgEj(s){
+  let t=0,m=0;
+  for(let d=0;d<7;d++){
+    EJERCICIOS.forEach(e=>{ t++; if(S.checks[ek(s,d,e.id)]) m++; });
+  }
+  return t?Math.round(m/t*100):0;
+}
+function calcAguaSem(s){
+  let total=0;
+  for(let d=0;d<7;d++) total+=S.agua[aguaKey(s,d)]??0;
+  return Math.round(total/7);
+}
+function contarNotas(s){
+  let c=0;
+  for(let d=0;d<7;d++) if(S.notas[notaKey(s,d)]) c++;
+  return c;
+}
+
+// RENDER SEMANA
+function renderSemana(){
+  document.getElementById('semTitulo').textContent=`Semana ${S.semana} — Resumen`;
+  const ps=progrSem(S.semana);
+
+  document.getElementById('semDiasContainer').innerHTML=DIAS.map((d,i)=>{
+    const p=progrDia(S.semana,i);
+    const col=p.pct===100?'#22c55e':p.pct>50?'#60a5fa':'#f59e0b';
+    const nk=notaKey(S.semana,i);
+    const nota=S.notas[nk];
+    const en=S.energia[nk], hm=S.hambre[nk];
+    let notaText='';
+    if(en||hm){
+      const ep=['😴','😐','⚡'][en?en-1:1];
+      const hp=['😊','😕','😤'][hm?hm-1:0];
+      notaText=`${ep} ${hp}${nota?' · '+nota.slice(0,30)+(nota.length>30?'...':''):''}`;
+    } else if(nota){
+      notaText=nota.slice(0,40)+(nota.length>40?'...':'');
+    }
+    return `<div class="semana-day-card" onclick="setDia(${i});setTab('hoy',null)">
+      <div class="sdc-left">
+        <div class="sdc-name">${d}</div>
+        <div class="sdc-sub">${p.m}/${p.t} completados · 💧${S.agua[aguaKey(S.semana,i)]??0}/8</div>
+        ${notaText?`<div class="sdc-nota">${notaText}</div>`:''}
+      </div>
+      ${sRing(p.pct,col)}
+    </div>`;
+  }).join('');
+
+  document.getElementById('semTotalLabel').textContent=`Total semana ${S.semana}`;
+  document.getElementById('semTotalPct').textContent=ps.pct+'%';
+  document.getElementById('semTotalSub').textContent=`${ps.m} de ${ps.t} tareas`;
+
+  const pA=calcProgAlim(S.semana), pE=calcProgEj(S.semana), ag=calcAguaSem(S.semana);
+  document.getElementById('resumenCard').innerHTML=`
+    <div class="resumen-title">📊 Análisis de la semana</div>
+    <div class="resumen-row">
+      <div class="resumen-col">
+        <div class="resumen-col-val" style="color:#a3c8a5">${pA}%</div>
+        <div class="resumen-col-label">Alimentación</div>
+      </div>
+      <div class="resumen-col">
+        <div class="resumen-col-val" style="color:#60a5fa">${pE}%</div>
+        <div class="resumen-col-label">Ejercicio</div>
+      </div>
+      <div class="resumen-col">
+        <div class="resumen-col-val" style="color:#38bdf8">${ag}</div>
+        <div class="resumen-col-label">Vasos/día prom.</div>
+      </div>
+    </div>
+    <div class="resumen-texto">${generarResumen(S.semana)}</div>
+  `;
+}
+
+// RENDER PROGRESO
+function renderProgreso(){
+  const pd=S.pesos[S.semana]??S.pesos[1]??{peso:PESO_INI};
+  const pesoAct=pd.peso??PESO_INI;
+  const perdido=Math.max(0,PESO_INI-pesoAct).toFixed(1);
+  const falta=Math.max(0,pesoAct-PESO_META).toFixed(1);
+  const pctMeta=Math.min(100,Math.max(0,Math.round(((PESO_INI-pesoAct)/(PESO_INI-PESO_META))*100)));
+
+  document.getElementById('metaActual').textContent=pesoAct+' kg';
+  document.getElementById('metaBarFill').style.width=pctMeta+'%';
+  document.getElementById('metaSub').textContent=`Bajaste ${perdido} kg · Faltan ${falta} kg para 80 kg`;
+
+  document.getElementById('pesosContainer').innerHTML=SEMANAS.map(s=>{
+    const pd=S.pesos[s];
+    const isCur=s===S.semana;
+    if(pd&&pd.peso){
+      const iv=parseFloat(imc(pd.peso));
+      const cat=imcCat(iv);
+      const pct=Math.min(100,Math.max(0,Math.round(((PESO_INI-pd.peso)/(PESO_INI-PESO_META))*100)));
+      const barCol=pct===100?'#22c55e':'#60a5fa';
+      const medidas=[];
+      if(pd.cintura) medidas.push(`Cin: ${pd.cintura} cm`);
+      if(pd.cadera) medidas.push(`Cad: ${pd.cadera} cm`);
+      return `<div class="peso-card${isCur?' current':''}">
+        <div class="peso-badge${isCur?' current':''}">S${s}</div>
+        <div class="peso-card-inner">
+          <div class="peso-top">
+            <span class="peso-val">${pd.peso} kg</span>
+            <span class="peso-cat" style="color:${cat.c}">${cat.l} · IMC ${imc(pd.peso)}</span>
+          </div>
+          ${medidas.length?`<div class="peso-medidas">${medidas.join(' · ')}</div>`:''}
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
+          <div class="bar-sub">${pct}% hacia la meta</div>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="peso-card${isCur?' current':''}">
+        <div class="peso-badge${isCur?' current':''}">S${s}</div>
+        <div class="peso-empty">Sin registro — usá ⚖️ Peso en el header</div>
+      </div>`;
+    }
+  }).join('');
+
+  document.getElementById('adhContainer').innerHTML=SEMANAS.filter(s=>s<=S.semana).map(s=>{
+    const p=progrSem(s);
+    const col=p.pct>=80?'#22c55e':p.pct>=50?'#60a5fa':'#f59e0b';
+    return `<div class="adh-row">
+      <span class="adh-s">S${s}</span>
+      <div class="adh-bar-bg"><div class="adh-bar-fill" style="width:${p.pct}%;background:${col}"></div></div>
+      <span class="adh-pct">${p.pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// NAV
+let activeTab='hoy';
+function setTab(tab,btn){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['hoy','semana','progreso'][i]===tab);
+  });
+  ['hoy','semana','progreso'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab);
+  });
+  renderTab();
+}
+function renderTab(){
+  if(activeTab==='hoy') renderHoy();
+  else if(activeTab==='semana') renderSemana();
+  else renderProgreso();
+  updateHeader();
+}
+function setSemana(s){
+  S.semana=s; save();
+  document.querySelectorAll('.semana-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.s)===s));
+  renderTab();
+}
+function setDia(d){
+  S.dia=d; save(); renderTab();
+}
+
+// POPUPS
+function openPopup(tipo){
+  if(tipo==='peso'){
+    document.getElementById('popPesoSem').textContent=S.semana;
+    const pd=S.pesos[S.semana];
+    document.getElementById('inPeso').value=pd?.peso??'';
+    document.getElementById('inCintura').value=pd?.cintura??'';
+    document.getElementById('inCadera').value=pd?.cadera??'';
+    document.getElementById('overlayPeso').classList.remove('hidden');
+  } else {
+    const nk=notaKey(S.semana,S.dia);
+    document.getElementById('popNotaDia').textContent=`${DIAS[S.dia]}, Semana ${S.semana}`;
+    document.getElementById('inNota').value=S.notas[nk]??'';
+    // energia
+    const en=S.energia[nk]??0;
+    document.querySelectorAll('#energiaSelector button').forEach(b=>{
+      b.classList.toggle('sel',parseInt(b.dataset.e)===en);
+    });
+    const hm=S.hambre[nk]??0;
+    document.querySelectorAll('#hambreSelector button').forEach(b=>{
+      b.classList.toggle('sel',parseInt(b.dataset.h)===hm);
+    });
+    document.getElementById('overlayNota').classList.remove('hidden');
+  }
+}
+function closePopup(tipo){
+  document.getElementById(tipo==='peso'?'overlayPeso':'overlayNota').classList.add('hidden');
+}
+function closePopupIf(e,id){
+  if(e.target===document.getElementById(id)) closePopup(id==='overlayPeso'?'peso':'nota');
+}
+
+let tmpEnergia=0, tmpHambre=0;
+function setEnergia(v){
+  const nk=notaKey(S.semana,S.dia);
+  tmpEnergia=v;
+  document.querySelectorAll('#energiaSelector button').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.dataset.e)===v);
+  });
+}
+function setHambre(v){
+  tmpHambre=v;
+  document.querySelectorAll('#hambreSelector button').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.dataset.h)===v);
+  });
+}
+
+function guardarPeso(){
+  const v=parseFloat(document.getElementById('inPeso').value.replace(',','.'));
+  if(isNaN(v)||v<40||v>200){ showToast('Ingresá un peso válido'); return; }
+  const cin=parseFloat(document.getElementById('inCintura').value)||null;
+  const cad=parseFloat(document.getElementById('inCadera').value)||null;
+  S.pesos[S.semana]={peso:v,cintura:cin,cadera:cad};
+  save(); closePopup('peso');
+  showToast('Medidas guardadas ✓');
+  renderTab();
+}
+function guardarNota(){
+  const nk=notaKey(S.semana,S.dia);
+  S.notas[nk]=document.getElementById('inNota').value.trim();
+  if(tmpEnergia) S.energia[nk]=tmpEnergia;
+  if(tmpHambre) S.hambre[nk]=tmpHambre;
+  save(); closePopup('nota');
+  showToast('Nota guardada ✓');
+  renderTab();
+  tmpEnergia=0; tmpHambre=0;
+}
+
+// TOAST
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// INIT
+function init(){
+  load();
+  document.getElementById('semanaBtns').innerHTML=SEMANAS.map(s=>
+    `<button class="semana-btn${s===S.semana?' active':''}" data-s="${s}" onclick="setSemana(${s})">${s}</button>`
+  ).join('');
+  renderTab();
+}
+init();
+</script>
+</body>
+</html>
