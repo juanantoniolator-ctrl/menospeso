@@ -553,23 +553,41 @@ const SEMANAS = [1,2,3,4,5,6,7,8,9];
 let PESO_INI = 86, PESO_META = 80, TALLA = 1.74;
 const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
-// MENU ROTATIVO - 3 opciones para almuerzo y cena
+// MENU ROTATIVO - opciones amplias para almuerzo, cena, colación y merienda
 const OPCIONES_ALMUERZO = [
   ['200 g de pollo a la plancha','Ensalada libre','½ taza arroz integral o batata'],
   ['Atún al natural (170 g)','Ensalada con maíz y tomate','1 rebanada de pan integral'],
   ['2 huevos duros + 1 clara extra','Ensalada verde abundante','½ taza de lentejas cocidas'],
+  ['Ensalada de garbanzos y espinaca','Tomate, pepino y cebolla morada','1 cdita de semillas de girasol'],
+  ['Merluza u otro pescado al horno','Verduras salteadas (zapallitos, zanahoria)','½ taza de quinoa cocida'],
+  ['Ensalada de lentejas con verdes','Rúcula, radicheta y tomate cherry','1 cdita de semillas de chía o sésamo'],
+  ['Wrap integral de pollo y palta','Hojas verdes y zanahoria rallada','Batata asada (porción chica)'],
+  ['Ensalada de porotos negros o alubias','Choclo, morrón y cebolla','Ají picado y jugo de limón'],
 ];
 const OPCIONES_CENA = [
   ['200 g de pescado a la plancha','Verduras al vapor','Sopa de verduras (si tenés hambre)'],
   ['200 g de pollo al horno','Brócoli y zanahoria salteados','1 caldo de verduras'],
   ['200 g de carne magra (nalga/lomo)','Ensalada abundante','Puré de calabaza (pequeño)'],
+  ['Guiso liviano de lentejas y verduras','Hojas verdes aparte','1 cdita de semillas de zapallo'],
+  ['Tortilla de acelga o espinaca (2 huevos)','Ensalada de hojas verdes y tomate','Semillas de girasol tostadas'],
+  ['Ensalada tibia de garbanzos y verduras asadas','Rúcula y espinaca','Aceite de oliva y limón'],
+  ['Salmón o atún fresco a la plancha','Verduras grilladas variadas','Ensalada verde con semillas de chía'],
+  ['Ensalada de quinoa, porotos y vegetales','Hojas verdes surtidas','Palta (porción chica)'],
+];
+const OPCIONES_COLACION = [
+  ['1 yogur descremado sin azúcar'],
+  ['1 fruta (manzana, pera o naranja)'],
+  ['1 puñado de frutos rojos (frutilla, arándanos)'],
+  ['1 cda de semillas de chía o lino + yogur'],
+  ['1 fruta + 5 almendras o nueces'],
+  ['Bastones de zanahoria y apio + hummus de garbanzos'],
 ];
 
 const COMIDAS_LV = [
   { id:'desayuno', hora:'07:00', nombre:'Desayuno', fija:true, items:['Mate o café sin azúcar','2 huevos revueltos','2 tostadas integrales','1 fruta (manzana o naranja)'] },
-  { id:'colacion', hora:'10:00', nombre:'Colación', fija:true, items:['1 yogur descremado sin azúcar'] },
+  { id:'colacion', hora:'10:00', nombre:'Colación', fija:false, opciones: OPCIONES_COLACION },
   { id:'almuerzo', hora:'13:00', nombre:'Almuerzo', fija:false, opciones: OPCIONES_ALMUERZO },
-  { id:'merienda', hora:'17:00', nombre:'Merienda', fija:true, items:['Mate','30 g de nueces o almendras'] },
+  { id:'merienda', hora:'17:00', nombre:'Merienda', fija:true, items:['Mate','30 g de nueces, almendras o semillas mixtas'] },
   { id:'cena', hora:'20:30', nombre:'Cena', fija:false, opciones: OPCIONES_CENA },
 ];
 const COMIDAS_SAB = [
